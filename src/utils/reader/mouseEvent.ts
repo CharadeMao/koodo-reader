@@ -424,77 +424,113 @@ export const bindHtmlEvent = (
     { passive: false }
   );
 
-  const isTouchDevice =
-    ConfigService.getReaderConfig("isTouch") === "yes" ||
-    "ontouchstart" in window ||
-    navigator.maxTouchPoints > 0;
+  let pointerStartTime = 0;
+  let pointerStartX = 0;
+  let pointerStartY = 0;
+  let isTouchAction = false;
 
-  if (isTouchDevice) {
-    const mc = new Hammer(doc);
-    mc.get("swipe").set({ direction: Hammer.DIRECTION_HORIZONTAL });
-    mc.on("swipeleft swiperight panleft panright", async (event: any) => {
-      if (readerMode === "scroll") {
-        return;
-      }
-      if (lock || event.pointerType === "mouse") return;
+  const handlePointerStart = (e: any) => {
+    pointerStartTime = Date.now();
+    if (e.touches && e.touches.length > 0) {
+      pointerStartX = e.touches[0].clientX;
+      pointerStartY = e.touches[0].clientY;
+    } else {
+      pointerStartX = e.clientX || 0;
+      pointerStartY = e.clientY || 0;
+    }
+  };
+
+  const handlePointerEnd = async (e: any) => {
+    if (readerMode === "scroll") {
+      await sleep(200);
+      await rendition.record();
+      handleLocation(key, rendition);
+      return;
+    }
+
+    const duration = Date.now() - pointerStartTime;
+    let endX = pointerStartX;
+    let endY = pointerStartY;
+    if (e.changedTouches && e.changedTouches.length > 0) {
+      endX = e.changedTouches[0].clientX;
+      endY = e.changedTouches[0].clientY;
+    } else if (e.clientX !== undefined) {
+      endX = e.clientX;
+      endY = e.clientY;
+    }
+
+    const dist = Math.hypot(endX - pointerStartX, endY - pointerStartY);
+
+    // Differentiate long press (> 300ms) or drag/selection (> 8px) from short click
+    if (duration > 300 || dist > 8) {
+      return;
+    }
+
+    // Preserve text selection, highlight, notes, translation popup menu
+    const selectedText = getSelection(format, key);
+    if (selectedText && selectedText.length > 0) {
+      return;
+    }
+
+    if (lock) return;
+
+    // Check 20% left / right click zones
+    const containerWidth =
+      doc.documentElement?.clientWidth ||
+      doc.body?.clientWidth ||
+      window.innerWidth ||
+      1;
+    const ratio = endX / containerWidth;
+
+    if (ratio <= 0.20) {
       lock = true;
-      await gesture(rendition, event.type);
+      await rendition.prev();
       handleLocation(key, rendition);
       setTimeout(() => (lock = false), throttleTime);
-    });
+    } else if (ratio >= 0.80) {
+      lock = true;
+      await rendition.next();
+      handleLocation(key, rendition);
+      setTimeout(() => (lock = false), throttleTime);
+    }
+  };
 
-    let touchStartX = 0;
-    let touchStartY = 0;
-    doc.addEventListener(
-      "touchstart",
-      (e: TouchEvent) => {
-        if (e.touches && e.touches.length === 1) {
-          touchStartX = e.touches[0].clientX;
-          touchStartY = e.touches[0].clientY;
-        }
-      },
-      { passive: true }
-    );
-
-    doc.addEventListener(
-      "touchend",
-      async (e: TouchEvent) => {
-        if (e.changedTouches && e.changedTouches.length === 1 && readerMode !== "scroll") {
-          const deltaX = e.changedTouches[0].clientX - touchStartX;
-          const deltaY = e.changedTouches[0].clientY - touchStartY;
-          if (
-            Math.abs(deltaX) > 40 &&
-            Math.abs(deltaX) > Math.abs(deltaY) * 1.2
-          ) {
-            if (lock) return;
-            lock = true;
-            if (deltaX < 0) {
-              await rendition.next();
-            } else {
-              await rendition.prev();
-            }
-            handleLocation(key, rendition);
-            setTimeout(() => (lock = false), throttleTime);
-          }
-        }
-      },
-      { passive: true }
-    );
-  }
+  doc.addEventListener(
+    "touchstart",
+    (e: TouchEvent) => {
+      isTouchAction = true;
+      handlePointerStart(e);
+    },
+    { passive: true }
+  );
 
   doc.addEventListener(
     "touchend",
-    async () => {
-      if (lock) return;
-      lock = true;
-      if (readerMode === "scroll") {
-        await sleep(200);
-        await rendition.record();
-      }
-      handleLocation(key, rendition);
-      setTimeout(() => (lock = false), throttleTime);
+    (e: TouchEvent) => {
+      handlePointerEnd(e);
+      setTimeout(() => {
+        isTouchAction = false;
+      }, 400);
     },
-    { passive: false }
+    { passive: true }
+  );
+
+  doc.addEventListener(
+    "mousedown",
+    (e: MouseEvent) => {
+      if (isTouchAction) return;
+      handlePointerStart(e);
+    },
+    { passive: true }
+  );
+
+  doc.addEventListener(
+    "mouseup",
+    (e: MouseEvent) => {
+      if (isTouchAction) return;
+      handlePointerEnd(e);
+    },
+    { passive: true }
   );
 };
 export const htmlMouseEvent = (

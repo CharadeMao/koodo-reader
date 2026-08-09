@@ -10,6 +10,8 @@
 .scrolling-html-viewer-page {
   overflow-y: auto;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
   /* 设置滚动条样式 */
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
