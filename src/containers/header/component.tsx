@@ -64,7 +64,7 @@ class Header extends React.Component<HeaderProps, HeaderState> {
       language: ConfigService.getReaderConfig("lang"),
       isNewVersion: false,
       width: document.body.clientWidth,
-      isHidePro: false,
+      isHidePro: true,
       isSync: false,
       notificationCount: 0,
     };

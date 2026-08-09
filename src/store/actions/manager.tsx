@@ -395,7 +395,7 @@ export function handleFetchPlugins() {
           }
         }
         TokenService.getToken("is_authed").then((value) => {
-          let isAuthed = value === "yes";
+          let isAuthed = true;
           if (
             isAuthed &&
             ConfigService.getReaderConfig("isDisableAI") !== "yes"
@@ -552,13 +552,12 @@ export function handleFetchPlugins() {
 export function handleFetchAuthed() {
   return (dispatch: Dispatch) => {
     try {
-      TokenService.getToken("is_authed").then((value) => {
-        let isAuthed = value === "yes";
-        if (isAuthed && !ConfigService.getItem("serverRegion")) {
-          ConfigService.setItem("serverRegion", "global");
-        }
-        dispatch(handleAuthed(isAuthed));
-      });
+      TokenService.setToken("is_authed", "yes");
+      ConfigService.setReaderConfig("isHidePro", "yes");
+      if (!ConfigService.getItem("serverRegion")) {
+        ConfigService.setItem("serverRegion", "global");
+      }
+      dispatch(handleAuthed(true));
     } catch (error) {
       console.error(error);
     }
