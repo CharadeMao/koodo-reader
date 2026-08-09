@@ -1099,5 +1099,8 @@
   "Unread": "未閱讀",
   "CurrentlyReading": "閱讀中",
   "Finished": "已讀完",
-  "Theme": "主题"
+  "Theme": "主題",
+  "Chinese text conversion": "中文簡繁轉換",
+  "Simplified to Traditional": "簡體轉繁體",
+  "Traditional to Simplified": "繁體轉簡體"
 }

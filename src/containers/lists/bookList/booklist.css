@@ -136,3 +136,22 @@
   cursor: pointer;
   margin-top: 2px;
 }
+
+@media screen and (max-width: 768px) {
+  .book-list-container-parent {
+    left: 0;
+    width: 100%;
+    top: 65px;
+    height: calc(100% - 115px);
+    box-sizing: border-box;
+    padding: 0 10px;
+  }
+  .book-list-header {
+    left: 0;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}

@@ -157,3 +157,15 @@
   display: inline-block;
   transform: scale(0.5) translate(-5px, 2px);
 }
+
+@media screen and (max-width: 768px) {
+  .book-list-cover-item {
+    width: 100%;
+    float: none;
+  }
+  .book-cover-item-title,
+  .book-cover-item-author,
+  .book-cover-item-desc {
+    width: calc(100% - 160px);
+  }
+}

@@ -1244,5 +1244,8 @@
   "Natural text-to-speech (82 languages, 569 voices)": "Natural text-to-speech (82 languages, 569 voices)",
   "OCR text recognition for scanned PDFs": "OCR text recognition for scanned PDFs",
   "Send to Kindle": "Send to Kindle",
-  "Email & live-chat priority support": "Email & live-chat priority support"
+  "Email & live-chat priority support": "Email & live-chat priority support",
+  "Chinese text conversion": "Chinese text conversion",
+  "Simplified to Traditional": "Simplified to Traditional",
+  "Traditional to Simplified": "Traditional to Simplified"
 }

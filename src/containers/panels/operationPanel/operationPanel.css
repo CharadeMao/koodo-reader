@@ -103,3 +103,24 @@
   margin-top: 7px;
   font-size: 15px;
 }
+
+@media screen and (max-width: 768px) {
+  .book-operation-panel {
+    width: min(94vw, 450px) !important;
+    left: 50% !important;
+    transform: translateX(-50%);
+  }
+  .exit-reading-button,
+  .add-bookmark-button,
+  .enter-fullscreen-button {
+    width: calc(33.3% - 10px);
+    margin-left: 5px;
+    padding: 0 4px;
+  }
+  .exit-reading-text,
+  .add-bookmark-text,
+  .enter-fullscreen-text {
+    font-size: 11px;
+    margin-left: 4px;
+  }
+}

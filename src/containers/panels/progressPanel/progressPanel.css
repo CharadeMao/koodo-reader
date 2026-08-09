@@ -153,3 +153,11 @@ input[type="range"]::-ms-thumb {
 #jumpChapter {
   outline: none;
 }
+
+@media screen and (max-width: 768px) {
+  .progress-panel {
+    width: min(94vw, 450px) !important;
+    left: 50% !important;
+    transform: translateX(-50%);
+  }
+}

@@ -44,6 +44,7 @@ class ReadingSetting extends React.Component<
         ConfigService.getReaderConfig("isOverwriteLink") === "yes",
       isOverwriteBackground:
         ConfigService.getReaderConfig("isOverwriteBackground") === "yes",
+      convertChinese: ConfigService.getReaderConfig("convertChinese") || "none",
     };
   }
 
@@ -153,6 +154,30 @@ class ReadingSetting extends React.Component<
     return (
       <>
         {this.renderSwitchOption(readingSettingList)}
+        <div className="setting-dialog-new-title">
+          <Trans>Chinese text conversion</Trans>
+          <select
+            name=""
+            className="lang-setting-dropdown"
+            value={this.state.convertChinese || "none"}
+            onChange={(event) => {
+              const value = event.target.value;
+              ConfigService.setReaderConfig("convertChinese", value);
+              this.setState({ convertChinese: value });
+              toast.success(this.props.t("Change successful"));
+            }}
+          >
+            <option value="none" className="lang-setting-option">
+              {this.props.t("Disabled")}
+            </option>
+            <option value="s2t" className="lang-setting-option">
+              {this.props.t("Simplified to Traditional")}
+            </option>
+            <option value="t2s" className="lang-setting-option">
+              {this.props.t("Traditional to Simplified")}
+            </option>
+          </select>
+        </div>
         {isElectron && (
           <>
             <div className="setting-dialog-new-title">

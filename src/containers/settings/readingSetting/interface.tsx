@@ -26,4 +26,5 @@ export interface SettingInfoState {
   isHideShelfBook: boolean;
   isPreventAdd: boolean;
   isLemmatizeWord: boolean;
+  convertChinese: string;
 }
