@@ -424,9 +424,15 @@ export const bindHtmlEvent = (
     { passive: false }
   );
 
-  if (ConfigService.getReaderConfig("isTouch") === "yes") {
+  const isTouchDevice =
+    ConfigService.getReaderConfig("isTouch") === "yes" ||
+    "ontouchstart" in window ||
+    navigator.maxTouchPoints > 0;
+
+  if (isTouchDevice) {
     const mc = new Hammer(doc);
-    mc.on("panleft panright panup pandown", async (event: any) => {
+    mc.get("swipe").set({ direction: Hammer.DIRECTION_HORIZONTAL });
+    mc.on("swipeleft swiperight panleft panright", async (event: any) => {
       if (readerMode === "scroll") {
         return;
       }
@@ -436,6 +442,44 @@ export const bindHtmlEvent = (
       handleLocation(key, rendition);
       setTimeout(() => (lock = false), throttleTime);
     });
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+    doc.addEventListener(
+      "touchstart",
+      (e: TouchEvent) => {
+        if (e.touches && e.touches.length === 1) {
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+        }
+      },
+      { passive: true }
+    );
+
+    doc.addEventListener(
+      "touchend",
+      async (e: TouchEvent) => {
+        if (e.changedTouches && e.changedTouches.length === 1 && readerMode !== "scroll") {
+          const deltaX = e.changedTouches[0].clientX - touchStartX;
+          const deltaY = e.changedTouches[0].clientY - touchStartY;
+          if (
+            Math.abs(deltaX) > 40 &&
+            Math.abs(deltaX) > Math.abs(deltaY) * 1.2
+          ) {
+            if (lock) return;
+            lock = true;
+            if (deltaX < 0) {
+              await rendition.next();
+            } else {
+              await rendition.prev();
+            }
+            handleLocation(key, rendition);
+            setTimeout(() => (lock = false), throttleTime);
+          }
+        }
+      },
+      { passive: true }
+    );
   }
 
   doc.addEventListener(
