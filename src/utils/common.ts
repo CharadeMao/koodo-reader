@@ -1,4 +1,4 @@
-﻿import Plugin from "../models/Plugin";
+import Plugin from "../models/Plugin";
 import { isElectron } from "react-device-detect";
 import CryptoJS from "crypto-js";
 import {
@@ -640,6 +640,21 @@ export const getPageWidth = (
 
     return limit;
   };
+  const clientWidth = document.body.clientWidth;
+  if (clientWidth <= 768) {
+    const isMobileNav = isNavLocked ? 260 : 0;
+    const isMobileSet = isSettingLocked ? 260 : 0;
+    let width = clientWidth - 20 - isMobileNav - isMobileSet;
+    if (width < 200) {
+      width = clientWidth - 20;
+    }
+    const offset = Math.max(0, (clientWidth - width) / 2);
+    return {
+      pageOffset: offset + "px",
+      pageWidth: width + "px",
+    };
+  }
+
   if (
     document.body.clientWidth * Math.abs(parseFloat(scale)) -
       document.body.clientWidth * 0.4 >

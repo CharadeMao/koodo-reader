@@ -87,18 +87,6 @@
   transform: scaleX(1);
 }
 @media screen and (max-width: 950px) {
-  .header {
-    margin-left: 0;
-    width: 100%;
-  }
-  .header-search-container {
-    margin-left: 15px;
-    width: calc(100% - 130px);
-  }
-  .setting-icon-parrent {
-    right: 15px;
-    margin-left: 0;
-  }
   .import-from-cloud {
     position: fixed;
     left: 15px;

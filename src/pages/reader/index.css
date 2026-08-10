@@ -7,7 +7,7 @@
 }
 .view-area {
   height: 100%;
-  touch-action: none;
+  touch-action: manipulation;
   position: relative;
 }
 
@@ -250,4 +250,13 @@
 }
 .reader-zoom-in-icon-container {
   font-size: 23px;
+}
+
+@media screen and (max-width: 768px) {
+  .operation-panel-container,
+  .progress-panel-container {
+    width: min(94vw, 450px);
+    left: 50vw;
+    transform: translateX(-50%);
+  }
 }

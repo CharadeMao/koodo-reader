@@ -31,6 +31,7 @@ import DatabaseService from "../../utils/storage/databaseService";
 import { getOcrResult, getOcrResultV2 } from "../../utils/request/reader";
 import { BookHelper } from "../../assets/lib/kookit.min";
 import { parseWithSystemOCR } from "../../utils/request/common";
+import ChineseConvert from "../../utils/reader/chineseConvert";
 declare var window: any;
 let lock = false; //prevent from clicking too fasts
 
@@ -279,7 +280,7 @@ class Viewer extends React.Component<ViewerProps, ViewerState> {
               ? "yes"
               : "no",
           backgroundColor: ConfigService.getReaderConfig("backgroundColor"),
-          isMobile: "no",
+          isMobile: document.body.clientWidth <= 768 ? "yes" : "no",
           isIndent: ConfigService.getReaderConfig("isIndent"),
           isHyphenation: ConfigService.getReaderConfig("isHyphenation"),
           isStartFromEven: ConfigService.getReaderConfig("isStartFromEven"),
@@ -477,6 +478,10 @@ class Viewer extends React.Component<ViewerProps, ViewerState> {
       // rendition.tranformText();
       this.handleBindGesture();
       await this.handleHighlight(rendition);
+      const convertMode = ConfigService.getReaderConfig("convertChinese");
+      if (convertMode && convertMode !== "none") {
+        ChineseConvert.convertAllIframes(convertMode);
+      }
       lock = true;
       setTimeout(() => {
         lock = false;

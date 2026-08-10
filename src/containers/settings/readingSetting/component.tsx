@@ -5,6 +5,7 @@ import { isElectron } from "react-device-detect";
 import toast from "react-hot-toast";
 import { ConfigService } from "../../../assets/lib/kookit-extra-browser.min";
 import { readingSettingList } from "../../../constants/settingList";
+import ChineseConvert from "../../../utils/reader/chineseConvert";
 declare var window: any;
 
 class ReadingSetting extends React.Component<
@@ -164,6 +165,7 @@ class ReadingSetting extends React.Component<
               const value = event.target.value;
               ConfigService.setReaderConfig("convertChinese", value);
               this.setState({ convertChinese: value });
+              ChineseConvert.convertAllIframes(value);
               toast.success(this.props.t("Change successful"));
             }}
           >
