@@ -374,6 +374,10 @@ class Login extends React.Component<LoginProps, LoginState> {
                             this.setState({ currentStep: 5 });
                             return;
                           }
+                          if (item.value === "password") {
+                            this.setState({ currentStep: 6 });
+                            return;
+                          }
                           let url = LoginHelper.getAuthUrl(
                             item.value,
                             isElectron ? "desktop" : "browser",
@@ -650,6 +654,153 @@ class Login extends React.Component<LoginProps, LoginState> {
             </div>
           </div>
         )}
+        {this.state.currentStep === 6 && (
+          <div
+            className="login-container"
+            style={{
+              backgroundColor: "#dcd7c7",
+            }}
+          >
+            <div
+              className="login-cover-container"
+              style={{
+                backgroundColor: "#e4e1d8",
+              }}
+            >
+              <div className="login-logo">
+                <img
+                  src={require("../../assets/images/logo-login.png")}
+                  alt="logo"
+                  className="login-logo-img"
+                />
+              </div>
+
+              <img
+                src={require("../../assets/images/background3.png")}
+                alt="cover"
+                className="login-cover-img"
+              />
+            </div>
+            <div className="login-content-container">
+              <div
+                className="login-title"
+                style={{ marginTop: "80px", marginBottom: "50px" }}
+              >
+                {this.props.t(
+                  "Log in with Password"
+                )}
+              </div>
+              <div className="login-option-box">
+                <div>
+                  <input
+                    type={"text"}
+                    name={"email"}
+                    placeholder={this.props.t("Enter your email")}
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        this.setState((prevState) => ({
+                          loginConfig: {
+                            ...prevState.loginConfig,
+                            ["email"]: e.target.value.trim(),
+                          },
+                        }));
+                      }
+                    }}
+                    onContextMenu={() => {
+                      handleContextMenu("token-dialog-email-box", true);
+                    }}
+                    onBlur={(e) => {
+                      const email = e.target.value.trim();
+                      if (email) {
+                        const emailRegex = /^[^s@]+@[^s@]+.[^s@]+$/;
+                        if (email && !emailRegex.test(email)) {
+                          toast.error(this.props.t("Invalid email format"));
+                          return;
+                        }
+                      }
+                    }}
+                    id={"token-dialog-email-box"}
+                    className="login-input-container"
+                  />
+                  <div style={{ position: "relative" }}>
+                    <input
+                      type={"password"}
+                      name={"password"}
+                      placeholder={this.props.t("Enter password")}
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          this.setState((prevState) => ({
+                            loginConfig: {
+                              ...prevState.loginConfig,
+                              ["password"]: e.target.value.trim(),
+                            },
+                          }));
+                        }
+                      }}
+                      onContextMenu={() => {
+                        handleContextMenu("token-dialog-password-box", true);
+                      }}
+                      id={"token-dialog-password-box"}
+                      className="login-input-container"
+                    />
+                  </div>
+
+                  <div
+                    className="login-manual-token"
+                    onClick={async () => {
+                      if (
+                        !this.state.loginConfig.password ||
+                        !this.state.loginConfig.email
+                      ) {
+                        toast.error(
+                          this.props.t("Missing parameters") +
+                            this.props.t("Password")
+                        );
+                        return;
+                      }
+                      const now = Date.now();
+                      if (now - this.lastLoginClickTime < 3000) {
+                        toast.error(
+                          this.props.t(
+                            "You are clicking too fast, please try again later"
+                          )
+                        );
+                        return;
+                      }
+                      this.lastLoginClickTime = now;
+                      this.handleLogin(
+                        this.state.loginConfig.email +
+                          "#" +
+                          this.state.loginConfig.password,
+                        "password"
+                      );
+                    }}
+                    style={{
+                      margin: "10px",
+                    }}
+                  >
+                    {this.props.t("Continue")}
+                  </div>
+                  <div
+                    className="login-next-button"
+                    onClick={() => {
+                      this.setState({
+                        currentStep: 2,
+                      });
+                    }}
+                    style={{
+                      borderWidth: "0px",
+                      right: "0px",
+                    }}
+                  >
+                    {this.props.t("Back")}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {this.state.currentStep === 5 && (
           <div
             className="login-container"
