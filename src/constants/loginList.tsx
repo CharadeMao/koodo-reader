@@ -23,4 +23,10 @@ export const loginList = [
     icon: "icon-microsoft",
     fontsize: "17px",
   },
+  {
+    label: "Password",
+    value: "password",
+    icon: "icon-email",
+    fontsize: "17px",
+  },
 ];
