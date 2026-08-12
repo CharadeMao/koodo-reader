@@ -365,9 +365,6 @@ class MoreAction extends React.Component<MoreActionProps, MoreActionState> {
                 <Trans>Share book</Trans>
               </p>
             </div>
-
-              </p>
-            </div>
             {isElectron && (
               <div
                 className="action-dialog-edit"
