@@ -174,9 +174,7 @@ class AccountSetting extends React.Component<
     let res = await userRequest.addLogin({
       code: this.state.loginConfig.token,
       provider: this.state.settingLogin,
-      scope:
-        KookitConfig.LoginAuthRequest[this.state.settingLogin].extraParams
-          .scope,
+      scope: KookitConfig.LoginAuthRequest[this.state.settingLogin] ? (KookitConfig.LoginAuthRequest[this.state.settingLogin].extraParams ? KookitConfig.LoginAuthRequest[this.state.settingLogin].extraParams.scope : "") : "",
       redirect_uri:
         getServerRegion() === "china" && this.state.settingLogin === "microsoft"
           ? KookitConfig.ThirdpartyConfig.cnCallbackUrl
