@@ -349,6 +349,25 @@ class MoreAction extends React.Component<MoreActionProps, MoreActionState> {
                 <Trans>Copy book link</Trans>
               </p>
             </div>
+            <div
+              className="action-dialog-edit"
+              style={{ paddingLeft: "0px" }}
+              onClick={() => {
+                const link = `${window.location.origin}/#/share?bookKey=${this.props.currentBook.key}`;
+                navigator.clipboard.writeText(link).then(() => {
+                  toast.success(this.props.t("Share link copied"));
+                });
+                this.props.handleMoreAction(false);
+                this.props.handleActionDialog(false);
+              }}
+            >
+              <p className="action-name">
+                <Trans>Share book</Trans>
+              </p>
+            </div>
+
+              </p>
+            </div>
             {isElectron && (
               <div
                 className="action-dialog-edit"
