@@ -35,7 +35,11 @@ class Redirect extends React.Component<RedirectProps, RedirectState> {
   async componentDidMount() {
     let url = document.location.href;
     const isAuthed = (await TokenService.getToken("is_authed")) === "yes";
-    if (document.location.hash === "#/" && url.indexOf("code") === -1) {
+    if (
+      url.indexOf("code") === -1 &&
+      url.indexOf("import") === -1 &&
+      url.indexOf("error") === -1
+    ) {
       if (isAuthed) {
         this.props.history.push("/manager/home");
       } else {

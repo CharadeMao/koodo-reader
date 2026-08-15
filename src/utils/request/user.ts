@@ -154,7 +154,10 @@ export const loginRegister = async (service: string, code: string) => {
   // If password service with Cloudflare Worker auth endpoint configured or requested
   if (service === "password" && cfAuthUrl) {
     try {
-      const [email, password] = code.split("#");
+      const sepIdx = code.indexOf("#");
+      const email = (sepIdx !== -1 ? code.substring(0, sepIdx) : code).trim();
+      const password = sepIdx !== -1 ? code.substring(sepIdx + 1) : "";
+
       const res = await fetch(`${cfAuthUrl}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -228,6 +231,11 @@ export const loginRegister = async (service: string, code: string) => {
   return response;
 };
 export const getTempToken = async () => {
+  const cfAuthUrl = getCloudflareAuthUrl();
+  if (cfAuthUrl) {
+    const token = await TokenService.getToken("access_token");
+    return { code: 200, data: { temp_token: token } };
+  }
   let userRequest = await getUserRequest();
   let response = await userRequest.getTempToken();
   if (response.code === 200) {
@@ -241,6 +249,26 @@ export const getTempToken = async () => {
   }
 };
 export const fetchUserInfo = async () => {
+  const cfAuthUrl = getCloudflareAuthUrl();
+  if (cfAuthUrl) {
+    try {
+      const userInfoStr = localStorage.getItem("user_info");
+      const user = userInfoStr ? JSON.parse(userInfoStr) : null;
+      return {
+        code: 200,
+        data: {
+          email: user?.email || "",
+          display_name: user?.displayName || user?.display_name || "Reader",
+          role: user?.role || "user",
+          is_enable_koodo_sync: "no",
+          valid_until: 4102444800, // Year 2100 (Lifetime Pro)
+          token_valid_until: 4102444800,
+        },
+      };
+    } catch (e) {
+      return { code: 200, data: { email: "", role: "user", valid_until: 4102444800 } };
+    }
+  }
   let userRequest = await getUserRequest();
   let response = await userRequest.getUserInfo();
   if (response.code === 401 || response.code === 10002) {
@@ -249,6 +277,10 @@ export const fetchUserInfo = async () => {
   return response;
 };
 export const updateUserConfig = async (config: any) => {
+  const cfAuthUrl = getCloudflareAuthUrl();
+  if (cfAuthUrl) {
+    return { code: 200 };
+  }
   let userRequest = await getUserRequest();
   let response = await userRequest.updateUserConfig(config);
   if (response.code === 200) {
