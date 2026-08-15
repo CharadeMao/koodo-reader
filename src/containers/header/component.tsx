@@ -44,7 +44,11 @@ import SupportDialog from "../../components/dialogs/supportDialog";
 import SyncService from "../../utils/storage/syncService";
 import { LocalFileManager } from "../../utils/file/localFile";
 import packageJson from "../../../package.json";
-import { getTempToken, updateUserConfig } from "../../utils/request/user";
+import {
+  getTempToken,
+  updateUserConfig,
+  fetchSharedStorageConfig,
+} from "../../utils/request/user";
 import i18n from "../../i18n";
 import { getNotification } from "../../utils/request/common";
 declare var window: any;
@@ -77,6 +81,7 @@ class Header extends React.Component<HeaderProps, HeaderState> {
         console.error("Failed to generate snapshot:", error);
       }
     }
+    await fetchSharedStorageConfig();
     this.props.handleFetchAuthed();
     this.props.handleFetchDefaultSyncOption();
     this.props.handleFetchDataSourceList();

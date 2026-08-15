@@ -27,25 +27,28 @@ wrangler d1 create bookrayder-users-db
 ```
 終端機會回傳 `database_id`，請將其填入 `wrangler.toml` 中的 `database_id = "..."`。
 
-### 3. 初始化資料庫資料表
+### 3. 初始化/更新資料庫資料表
 ```bash
-wrangler d1 execute bookrayder-users-db --file=./schema.sql
+npx wrangler d1 execute bookrayder-users-db --file=./schema.sql
 ```
 
-### 4. 設定環境金鑰 (Secret)
+### 4. 部署/更新 Worker
 ```bash
-wrangler secret put JWT_SECRET
-# 輸入自訂的高強度隨機字串
-
-wrangler secret put ADMIN_API_KEY
-# 輸入自訂的管理員金鑰
-```
-
-### 5. 部署 Worker
-```bash
-wrangler deploy
+npx wrangler deploy
 ```
 部署完成後會得到 Worker 網址，例如：`https://bookrayder-auth-worker.your-account.workers.dev`。
+
+---
+
+## 全家共用書庫 (Family Shared Storage) 機制
+
+### 運作原理：
+1. **管理員綁定 (`role: 'admin'`)**：
+   - 管理員在閱讀器「設定 ➔ 同步與備份」中綁定 WebDAV、S3、Cloudflare R2 或雲端硬碟。
+   - 綁定完成後，系統自動將連線配置加密存入 Cloudflare D1 的 `shared_config` 表中。
+2. **家人帳號無感享受 (`role: 'user'`)**：
+   - 任何家人帳號登入時，前端會自動向 Worker 取得 `shared_config`，無感套用共用書庫連線並自動載入所有書籍。
+   - 家人端「同步與備份」設定頁面為唯讀保護狀態，防止誤刪或誤改空間配置。
 
 ---
 

@@ -40,7 +40,11 @@ import {
   onSyncCallback,
 } from "../../../utils/request/thirdparty";
 import SyncService from "../../../utils/storage/syncService";
-import { updateUserConfig } from "../../../utils/request/user";
+import {
+  updateUserConfig,
+  saveSharedStorageConfig,
+  fetchSharedStorageConfig,
+} from "../../../utils/request/user";
 import BookUtil from "../../../utils/file/bookUtil";
 import Book from "../../../models/Book";
 import ConfigUtil from "../../../utils/file/configUtil";
@@ -65,6 +69,39 @@ class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
       showDefaultSyncAddGrid: false,
     };
   }
+
+  async componentDidMount() {
+    await fetchSharedStorageConfig();
+    this.props.handleFetchDataSourceList();
+    this.props.handleFetchDefaultSyncOption();
+  }
+
+  syncSharedStorageToCloud = async () => {
+    try {
+      const userInfoStr = localStorage.getItem("user_info");
+      const role = userInfoStr ? (JSON.parse(userInfoStr).role || "user") : "user";
+      if (role !== "admin") return;
+
+      const defaultSyncOption = ConfigService.getItem("defaultSyncOption") || "";
+      const dataSourceList = ConfigService.getAllListConfig("dataSourceList") || [];
+      const driveConfigs: Record<string, any> = {};
+
+      for (let ds of dataSourceList) {
+        const token = await TokenService.getToken(ds + "_token");
+        if (token) driveConfigs[ds + "_token"] = token;
+        const config = ConfigService.getItem(ds + "_config");
+        if (config) driveConfigs[ds + "_config"] = config;
+      }
+
+      await saveSharedStorageConfig({
+        defaultSyncOption,
+        dataSourceList,
+        driveConfigs,
+      });
+    } catch (e) {
+      console.error("syncSharedStorageToCloud error:", e);
+    }
+  };
 
   handleRest = (_bool: boolean) => {
     toast.success(this.props.t("Change successful"));
@@ -480,6 +517,7 @@ class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
     }
     this.props.handleFetchDataSourceList();
     this.props.handleSettingDrive("");
+    await this.syncSharedStorageToCloud();
   };
 
   renderSwitchOption = (optionList: any[]) => {
@@ -587,40 +625,72 @@ class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
   };
   render() {
     const { showDefaultSyncAddGrid } = this.state;
+    const userInfoStr = localStorage.getItem("user_info");
+    const role = userInfoStr ? (JSON.parse(userInfoStr).role || "user") : "user";
+    const isAdmin = role === "admin";
+
     return (
       <>
-        <div
-          className="add-source-card"
-          onClick={() => {
-            this.setState({
-              showDefaultSyncAddGrid: !this.state.showDefaultSyncAddGrid,
-            });
-          }}
-        >
-          <svg
-            className="add-source-card-icon"
-            viewBox="0 0 24 24"
-            width="20"
-            height="20"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+        {!isAdmin && (
+          <div
             style={{
-              transform: showDefaultSyncAddGrid
-                ? "rotate(45deg)"
-                : "rotate(0deg)",
-              transition: "transform 0.25s ease",
+              margin: "10px 20px 18px",
+              padding: "12px 16px",
+              borderRadius: "10px",
+              backgroundColor: "rgba(59, 130, 246, 0.08)",
+              border: "1px solid rgba(59, 130, 246, 0.2)",
+              color: "#1d4ed8",
+              fontSize: "13px",
+              display: "flex",
+              alignItems: "center",
+              lineHeight: "1.5",
             }}
           >
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-          <span className="add-source-card-label">
-            <Trans>Add data source</Trans>
-          </span>
-        </div>
+            <span
+              className="icon-cloud"
+              style={{ fontSize: "18px", marginRight: "10px", flexShrink: 0 }}
+            />
+            <span>
+              {this.props.t(
+                "Family shared storage is active. Storage configuration is managed by Administrator."
+              )}
+            </span>
+          </div>
+        )}
+        {isAdmin && (
+          <div
+            className="add-source-card"
+            onClick={() => {
+              this.setState({
+                showDefaultSyncAddGrid: !this.state.showDefaultSyncAddGrid,
+              });
+            }}
+          >
+            <svg
+              className="add-source-card-icon"
+              viewBox="0 0 24 24"
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{
+                transform: showDefaultSyncAddGrid
+                  ? "rotate(45deg)"
+                  : "rotate(0deg)",
+                transition: "transform 0.25s ease",
+              }}
+            >
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            <span className="add-source-card-label">
+              <Trans>Add data source (Admin)</Trans>
+            </span>
+          </div>
+        )}
         {this.state.showDefaultSyncAddGrid && (
           <div
             className="account-login-grid"

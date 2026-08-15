@@ -89,6 +89,10 @@ export const loginRegister = async (service: string, code: string) => {
         if (data.user) {
           localStorage.setItem("user_info", JSON.stringify(data.user));
         }
+        // Auto fetch and apply shared storage configuration on login
+        setTimeout(() => {
+          fetchSharedStorageConfig();
+        }, 300);
         return { code: 200, data: { access_token: data.token, refresh_token: data.token } };
       } else {
         return { code: 401, msg: data.error || "Invalid email or password" };
@@ -97,6 +101,90 @@ export const loginRegister = async (service: string, code: string) => {
       return { code: 500, msg: e.message || "Failed to connect to Cloudflare Auth Worker" };
     }
   }
+
+export const getCloudflareAuthUrl = (): string => {
+  const DEFAULT_CF_AUTH_URL =
+    "https://bookrayder-auth-worker.charade-mao.workers.dev";
+  return (
+    ConfigService.getItem("cloudflareAuthUrl") ||
+    localStorage.getItem("cloudflareAuthUrl") ||
+    DEFAULT_CF_AUTH_URL
+  ).replace(/\/+$/, "");
+};
+
+export const fetchSharedStorageConfig = async (): Promise<any | null> => {
+  try {
+    const cfUrl = getCloudflareAuthUrl();
+    const token = await TokenService.getToken("access_token");
+    if (!token) return null;
+
+    const res = await fetch(`${cfUrl}/api/shared/storage`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data && data.configured && data.config) {
+      const { defaultSyncOption, dataSourceList, driveConfigs } = data.config;
+      if (defaultSyncOption) {
+        ConfigService.setItem("defaultSyncOption", defaultSyncOption);
+      }
+      if (Array.isArray(dataSourceList)) {
+        for (let ds of dataSourceList) {
+          ConfigService.setListConfig(ds, "dataSourceList");
+        }
+      }
+      if (driveConfigs && typeof driveConfigs === "object") {
+        for (let key of Object.keys(driveConfigs)) {
+          ConfigService.setItem(key, driveConfigs[key]);
+        }
+      }
+      return data.config;
+    }
+    return null;
+  } catch (e) {
+    console.error("fetchSharedStorageConfig error:", e);
+    return null;
+  }
+};
+
+export const saveSharedStorageConfig = async (config: {
+  defaultSyncOption: string;
+  dataSourceList: string[];
+  driveConfigs: Record<string, any>;
+}): Promise<{ success: boolean; message?: string }> => {
+  try {
+    const cfUrl = getCloudflareAuthUrl();
+    const token = await TokenService.getToken("access_token");
+    if (!token) {
+      return { success: false, message: "Please login first" };
+    }
+
+    const res = await fetch(`${cfUrl}/api/shared/storage`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ config }),
+    });
+
+    const data = await res.json();
+    if (res.ok && data.success) {
+      toast.success(i18n.t("Family shared storage updated successfully!"));
+      return { success: true };
+    } else {
+      const errMsg = data.error || "Failed to save shared storage";
+      toast.error(errMsg);
+      return { success: false, message: errMsg };
+    }
+  } catch (e: any) {
+    toast.error(e.message || "Network error");
+    return { success: false, message: e.message };
+  }
+};
 
   let deviceName = await getDeviceName();
   let userRequest = await getUserRequest();

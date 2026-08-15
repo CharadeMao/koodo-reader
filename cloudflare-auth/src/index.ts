@@ -328,6 +328,95 @@ export default {
       }
     }
 
+    // 4. Family Shared Storage Config API
+    // GET /api/shared/storage (Any authenticated family member)
+    if (url.pathname === '/api/shared/storage' && request.method === 'GET') {
+      const authHeader = request.headers.get('Authorization');
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return jsonResponse({ error: 'Unauthorized: Login required' }, 401);
+      }
+      const token = authHeader.substring(7);
+      const user = await verifyJWT(token, env.JWT_SECRET || 'fallback-secret-key');
+      if (!user) {
+        return jsonResponse({ error: 'Unauthorized: Invalid token' }, 401);
+      }
+
+      const row: any = await env.DB.prepare(
+        "SELECT value, updated_at, updated_by FROM shared_config WHERE key = 'shared_storage'"
+      ).first();
+
+      if (!row) {
+        return jsonResponse({ configured: false, config: null });
+      }
+
+      try {
+        const config = JSON.parse(row.value);
+        return jsonResponse({
+          configured: true,
+          config,
+          updatedAt: row.updated_at,
+          updatedBy: row.updated_by
+        });
+      } catch (e) {
+        return jsonResponse({ configured: false, config: null });
+      }
+    }
+
+    // POST /api/shared/storage (ADMIN ONLY)
+    if (url.pathname === '/api/shared/storage' && request.method === 'POST') {
+      let isAuthorizedAdmin = false;
+      let adminIdentifier = 'admin';
+
+      // Check X-Admin-Key
+      const adminKey = request.headers.get('X-Admin-Key');
+      if (adminKey && adminKey === env.ADMIN_API_KEY) {
+        isAuthorizedAdmin = true;
+        adminIdentifier = 'api_key_admin';
+      }
+
+      // Check JWT role === 'admin'
+      const authHeader = request.headers.get('Authorization');
+      if (!isAuthorizedAdmin && authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.substring(7);
+        const user = await verifyJWT(token, env.JWT_SECRET || 'fallback-secret-key');
+        if (user && user.role === 'admin') {
+          isAuthorizedAdmin = true;
+          adminIdentifier = user.email || user.sub;
+        }
+      }
+
+      if (!isAuthorizedAdmin) {
+        return jsonResponse({
+          error: 'Forbidden: Only administrators can configure shared storage.'
+        }, 403);
+      }
+
+      try {
+        const body: any = await request.json();
+        const { config } = body;
+        if (!config) {
+          return jsonResponse({ error: 'Storage config is required' }, 400);
+        }
+
+        const valueStr = JSON.stringify(config);
+        await env.DB.prepare(
+          `INSERT INTO shared_config (key, value, updated_by, updated_at) 
+           VALUES ('shared_storage', ?, ?, CURRENT_TIMESTAMP)
+           ON CONFLICT(key) DO UPDATE SET 
+             value = excluded.value,
+             updated_by = excluded.updated_by,
+             updated_at = CURRENT_TIMESTAMP`
+        ).bind(valueStr, adminIdentifier).run();
+
+        return jsonResponse({
+          success: true,
+          message: 'Shared family storage updated successfully'
+        });
+      } catch (e: any) {
+        return jsonResponse({ error: e.message || 'Failed to save config' }, 500);
+      }
+    }
+
     return jsonResponse({ error: 'Endpoint not found' }, 404);
   }
 };
