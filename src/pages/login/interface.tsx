@@ -13,6 +13,7 @@ export interface LoginProps extends RouteComponentProps<any> {
   isSettingOpen: boolean;
   isShowLoading: boolean;
   isShowSupport: boolean;
+  isAuthed: boolean;
 }
 
 export interface LoginState {

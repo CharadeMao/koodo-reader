@@ -18,7 +18,7 @@ import LoadingDialog from "../../components/dialogs/loadingDialog";
 import { Toaster } from "react-hot-toast";
 import DetailDialog from "../../components/dialogs/detailDialog";
 import { Tooltip } from "react-tooltip";
-import { ConfigService } from "../../assets/lib/kookit-extra-browser.min";
+import { ConfigService, TokenService } from "../../assets/lib/kookit-extra-browser.min";
 import SortShelfDialog from "../../components/dialogs/sortShelfDialog";
 import PopupNote from "../../components/popups/popupNote";
 import toast from "react-hot-toast";
@@ -48,32 +48,12 @@ class Manager extends React.Component<ManagerProps, ManagerState> {
     };
   }
 
-  UNSAFE_componentWillReceiveProps(nextProps: ManagerProps) {
-    if (nextProps.books && this.state.totalBooks !== nextProps.books.length) {
-      this.setState(
-        {
-          totalBooks: nextProps.books.length,
-        },
-        () => {
-          ConfigService.setReaderConfig(
-            "totalBooks",
-            this.state.totalBooks.toString()
-          );
-        }
-      );
+  async UNSAFE_componentWillMount() {
+    const isAuthed = (await TokenService.getToken("is_authed")) === "yes";
+    if (!isAuthed) {
+      this.props.history.push("/login");
+      return;
     }
-    if (nextProps.books && nextProps.books.length === 1 && !this.props.books) {
-      this.props.history.push("/manager/home");
-    }
-    if (this.props.mode !== nextProps.mode) {
-      this.setState({
-        favoriteBooks: Object.keys(
-          ConfigService.getAllListConfig("favoriteBooks")
-        ).length,
-      });
-    }
-  }
-  UNSAFE_componentWillMount() {
     this.props.handleFetchBooks();
     this.props.handleFetchPlugins();
     this.props.handleFetchNotes();
@@ -82,7 +62,12 @@ class Manager extends React.Component<ManagerProps, ManagerState> {
     this.props.handleFetchNoteSortCode();
     this.props.handleFetchViewMode();
   }
-  componentDidMount() {
+  async componentDidMount() {
+    const isAuthed = (await TokenService.getToken("is_authed")) === "yes";
+    if (!isAuthed) {
+      this.props.history.push("/login");
+      return;
+    }
     this.props.handleReadingState(false);
     document.addEventListener("dragstart", this.handleDocumentDragStart, true);
     document.addEventListener("dragend", this.handleDocumentDragEnd, true);

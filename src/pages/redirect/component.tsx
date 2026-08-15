@@ -10,7 +10,7 @@ import emptyDark from "../../assets/images/empty-dark.svg";
 import emptyLight from "../../assets/images/empty-light.svg";
 import animationSuccess from "../../assets/lotties/success.json";
 import toast, { Toaster } from "react-hot-toast";
-import { ConfigService } from "../../assets/lib/kookit-extra-browser.min";
+import { ConfigService, TokenService } from "../../assets/lib/kookit-extra-browser.min";
 import * as Kookit from "../../assets/lib/kookit.min";
 import { removeSearchParams } from "../../utils/common";
 import { BookHelper } from "../../assets/lib/kookit.min";
@@ -32,10 +32,16 @@ class Redirect extends React.Component<RedirectProps, RedirectState> {
   showMessage = (message: string) => {
     toast(this.props.t(message));
   };
-  componentDidMount() {
+  async componentDidMount() {
     let url = document.location.href;
+    const isAuthed = (await TokenService.getToken("is_authed")) === "yes";
     if (document.location.hash === "#/" && url.indexOf("code") === -1) {
-      this.props.history.push("/manager/home");
+      if (isAuthed) {
+        this.props.history.push("/manager/home");
+      } else {
+        this.props.history.push("/login");
+      }
+      return;
     }
     if (url.indexOf("error") > -1) {
       this.setState({ isError: true });

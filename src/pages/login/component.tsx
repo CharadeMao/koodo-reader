@@ -110,7 +110,6 @@ class Login extends React.Component<LoginProps, LoginState> {
       this.props.handleFetchAuthed();
       await this.props.handleFetchUserInfo();
       toast.success(this.props.t("Login successful"));
-      this.setState({ currentStep: result ? 4 : 3 });
       if (ConfigService.getReaderConfig("isProUpgraded") !== "yes") {
         try {
           ConfigService.setReaderConfig("isProUpgraded", "yes");
@@ -119,6 +118,9 @@ class Login extends React.Component<LoginProps, LoginState> {
           console.error(error);
         }
       }
+      setTimeout(() => {
+        this.props.history.push("/manager/home");
+      }, 500);
     } else {
       this.props.handleLoadingDialog(false);
       if (service === "email") {
@@ -148,14 +150,16 @@ class Login extends React.Component<LoginProps, LoginState> {
             },
           }}
         />
-        <div
-          className="login-close-container"
-          onClick={() => {
-            this.props.history.push("/manager/home");
-          }}
-        >
-          <span className="icon-close login-close-icon theme-color-delete"></span>
-        </div>
+        {this.props.isAuthed && (
+          <div
+            className="login-close-container"
+            onClick={() => {
+              this.props.history.push("/manager/home");
+            }}
+          >
+            <span className="icon-close login-close-icon theme-color-delete"></span>
+          </div>
+        )}
         {this.props.isSettingOpen && <SettingDialog />}
         {this.props.isShowLoading && <LoadingDialog />}
         {this.state.currentStep === 0 && (

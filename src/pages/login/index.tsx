@@ -19,6 +19,7 @@ const mapStateToProps = (state: stateType) => {
     isSettingOpen: state.manager.isSettingOpen,
     isShowLoading: state.manager.isShowLoading,
     isShowSupport: state.manager.isShowSupport,
+    isAuthed: state.manager.isAuthed,
     cloudSyncFunc: state.book.cloudSyncFunc,
   };
 };

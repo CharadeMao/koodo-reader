@@ -65,6 +65,39 @@ export const getDeviceName = async (): Promise<string> => {
 };
 
 export const loginRegister = async (service: string, code: string) => {
+  const DEFAULT_CF_AUTH_URL =
+    "https://bookrayder-auth-worker.charade-mao.workers.dev";
+  const cfAuthUrl =
+    ConfigService.getItem("cloudflareAuthUrl") ||
+    localStorage.getItem("cloudflareAuthUrl") ||
+    DEFAULT_CF_AUTH_URL;
+
+  // If password service with Cloudflare Worker auth endpoint configured or requested
+  if (service === "password" && cfAuthUrl) {
+    try {
+      const [email, password] = code.split("#");
+      const res = await fetch(`${cfAuthUrl.replace(/\/+$/, "")}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success && data.token) {
+        await TokenService.setToken("is_authed", "yes");
+        await TokenService.setToken("access_token", data.token);
+        await TokenService.setToken("refresh_token", data.token);
+        if (data.user) {
+          localStorage.setItem("user_info", JSON.stringify(data.user));
+        }
+        return { code: 200, data: { access_token: data.token, refresh_token: data.token } };
+      } else {
+        return { code: 401, msg: data.error || "Invalid email or password" };
+      }
+    } catch (e: any) {
+      return { code: 500, msg: e.message || "Failed to connect to Cloudflare Auth Worker" };
+    }
+  }
+
   let deviceName = await getDeviceName();
   let userRequest = await getUserRequest();
   let response = await userRequest.loginRegister({
