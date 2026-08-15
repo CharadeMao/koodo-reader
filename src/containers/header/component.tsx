@@ -677,57 +677,6 @@ class Header extends React.Component<HeaderProps, HeaderState> {
         className="header"
         style={this.props.isCollapsed ? { marginLeft: "40px" } : {}}
       >
-        {this.props.isAuthed && (
-          <div
-            className="header-chat-widget"
-            onClick={async () => {
-              this.setState({ notificationCount: 0 });
-              let deviceUuid = await TokenService.getFingerprint();
-              if (isElectron) {
-                window.require("electron").ipcRenderer.invoke("new-chat", {
-                  url:
-                    getWebsiteUrl() +
-                    (ConfigService.getReaderConfig("lang").startsWith("zh")
-                      ? "/zh/faq"
-                      : "/en/faq") +
-                    "?referer=app&version=" +
-                    packageJson.version +
-                    "&client=desktop&device=" +
-                    deviceUuid,
-                  locale: getChatLocale(),
-                });
-              } else {
-                openInBrowser(
-                  getWebsiteUrl() +
-                    (ConfigService.getReaderConfig("lang").startsWith("zh")
-                      ? "/zh/faq"
-                      : "/en/faq") +
-                    "?referer=app&version=" +
-                    packageJson.version +
-                    "&client=web&device=" +
-                    deviceUuid
-                );
-              }
-            }}
-          >
-            <img
-              src={require("../../assets/images/chat-widget.png")}
-              alt="logo"
-              className="login-mobile-qr"
-              style={{
-                width: "100%",
-                height: "100%",
-              }}
-            />
-            {this.state.notificationCount > 0 && (
-              <div className="header-chat-widget-badge">
-                {this.state.notificationCount > 99
-                  ? "99+"
-                  : this.state.notificationCount}
-              </div>
-            )}
-          </div>
-        )}
         <div
           className="header-search-container"
           style={this.props.isCollapsed ? { width: "369px" } : {}}

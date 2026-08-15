@@ -1,0 +1,14 @@
+name = "bookrayder-auth-worker"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+# Bind your Cloudflare D1 Database
+[[d1_databases]]
+binding = "DB"
+database_name = "bookrayder-users-db"
+database_id = "73afecf2-0309-4845-89af-b1861ef061f1"
+
+# Environment Variables
+[vars]
+JWT_SECRET = "sweethome27987074"
+ADMIN_API_KEY = "sweethome27987074"	

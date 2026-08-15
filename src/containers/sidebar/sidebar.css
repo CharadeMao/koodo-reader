@@ -3,12 +3,22 @@
   height: 100%;
 }
 
-.logo {
-  width: 125px;
+.bookrayder-brand-logo {
   position: absolute;
-  top: 15px;
-  left: 70px;
+  top: 25px;
+  left: 60px;
+  display: flex;
+  align-items: center;
+  user-select: none;
   cursor: pointer;
+}
+.bookrayder-logo-text {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #1e293b, #475569);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 .side-menu-container-parent {
   position: relative;
@@ -82,6 +92,72 @@
 @media screen and (max-width: 950px) {
   .side-menu-container-parent {
     height: calc(100% - 155px);
+  }
+}
+.sidebar-mobile-backdrop {
+  display: none;
+}
+.sidebar-mobile-menu-btn {
+  display: none;
+}
+@media screen and (max-width: 768px) {
+  .sidebar-mobile-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 15px;
+    left: 10px;
+    z-index: 950;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    font-size: 20px;
+  }
+  .sidebar-mobile-backdrop {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(2px);
+    z-index: 800;
+  }
+  .sidebar {
+    position: fixed !important;
+    left: 0;
+    top: 0;
+    height: 100% !important;
+    width: 220px !important;
+    background-color: inherit;
+    background: #f7f6f2;
+    z-index: 850 !important;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.25);
+  }
+  .sidebar.sidebar-collapsed {
+    transform: translateX(-100%) !important;
+    box-shadow: none !important;
+  }
+  .sidebar.sidebar-expanded {
+    transform: translateX(0) !important;
+  }
+  .sidebar-list-icon {
+    position: fixed !important;
+    top: 15px !important;
+    left: 10px !important;
+    z-index: 900 !important;
+    width: 40px !important;
+    height: 40px !important;
+  }
+  .side-menu-container-parent {
+    width: 220px !important;
+    height: calc(100% - 130px) !important;
+  }
+  .sidebar-shelf-content {
+    width: calc(100% - 60px) !important;
   }
 }
 .side-menu-icon {

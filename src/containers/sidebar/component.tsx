@@ -18,6 +18,7 @@ class Sidebar extends React.Component<SidebarProps, SidebarState> {
   private newShelfInput = React.createRef<HTMLInputElement>();
   constructor(props: SidebarProps) {
     super(props);
+    const isMobile = document.body.clientWidth <= 768;
     this.state = {
       mode: "home",
       hoverMode: "",
@@ -25,14 +26,18 @@ class Sidebar extends React.Component<SidebarProps, SidebarState> {
       isCollpaseShelf: false,
       isOpenDelete: false,
       shelfTitle: "",
-      isCollapsed:
-        ConfigService.getReaderConfig("isCollapsed") === "yes" || false,
+      isCollapsed: isMobile
+        ? true
+        : ConfigService.getReaderConfig("isCollapsed") === "yes" || false,
       isCreateShelf: false,
       newShelfName: "",
       dropTargetShelf: "",
     };
   }
   componentDidMount() {
+    if (document.body.clientWidth <= 768) {
+      this.handleCollapse(true);
+    }
     this.props.handleMode(
       document.URL.split("/").reverse()[0] === "empty"
         ? "home"
@@ -68,6 +73,9 @@ class Sidebar extends React.Component<SidebarProps, SidebarState> {
     this.props.handleShelf("");
     this.props.handleSearch(false);
     this.props.handleSortDisplay(false);
+    if (document.body.clientWidth <= 768) {
+      this.handleCollapse(true);
+    }
   };
   handleHover = (mode: string) => {
     this.setState({ hoverMode: mode });
@@ -215,7 +223,7 @@ class Sidebar extends React.Component<SidebarProps, SidebarState> {
             onMouseLeave={() => {
               this.handleHover("");
             }}
-            style={this.props.isCollapsed ? { width: 40, marginLeft: 15 } : {}}
+            style={this.state.isCollapsed ? { width: 40, marginLeft: 15 } : {}}
             {...(isDropTarget
               ? this.getBookDragHandlers(
                   item.mode,
@@ -240,7 +248,7 @@ class Sidebar extends React.Component<SidebarProps, SidebarState> {
             >
               <div
                 className="side-menu-icon"
-                style={this.props.isCollapsed ? {} : { marginLeft: "38px" }}
+                style={this.state.isCollapsed ? {} : { marginLeft: "38px" }}
               >
                 <span
                   className={
@@ -249,7 +257,7 @@ class Sidebar extends React.Component<SidebarProps, SidebarState> {
                       : `icon-${item.icon}`
                   }
                   style={
-                    this.props.isCollapsed
+                    this.state.isCollapsed
                       ? { position: "relative", marginLeft: "-9px" }
                       : {}
                   }
@@ -258,7 +266,7 @@ class Sidebar extends React.Component<SidebarProps, SidebarState> {
 
               <span
                 style={
-                  this.props.isCollapsed
+                  this.state.isCollapsed
                     ? { display: "none", width: "70%" }
                     : { width: "60%" }
                 }
@@ -375,7 +383,27 @@ class Sidebar extends React.Component<SidebarProps, SidebarState> {
     };
     return (
       <>
-        <div className="sidebar">
+        <div
+          className="sidebar-mobile-menu-btn"
+          onClick={() => {
+            this.handleCollapse(!this.state.isCollapsed);
+          }}
+        >
+          <span className="icon-menu sidebar-list"></span>
+        </div>
+        {!this.state.isCollapsed && (
+          <div
+            className="sidebar-mobile-backdrop"
+            onClick={() => {
+              this.handleCollapse(true);
+            }}
+          />
+        )}
+        <div
+          className={`sidebar${
+            this.state.isCollapsed ? " sidebar-collapsed" : " sidebar-expanded"
+          }`}
+        >
           <div
             className="sidebar-list-icon"
             onClick={() => {
@@ -385,29 +413,12 @@ class Sidebar extends React.Component<SidebarProps, SidebarState> {
             <span className="icon-menu sidebar-list"></span>
           </div>
 
-          <img
-            src={
-              ConfigService.getReaderConfig("appSkin") === "night" ||
-              (ConfigService.getReaderConfig("appSkin") === "system" &&
-                ConfigService.getReaderConfig("isOSNight") === "yes")
-                ? require(
-                    `../../assets/images/logo-dark${
-                      this.props.isAuthed ? "-pro" : ""
-                    }.png`
-                  )
-                : require(
-                    `../../assets/images/logo-light${
-                      this.props.isAuthed ? "-pro" : ""
-                    }.png`
-                  )
-            }
-            alt=""
-            onClick={() => {
-              this.handleJump(getWebsiteUrl());
-            }}
+          <div
+            className="bookrayder-brand-logo"
             style={this.state.isCollapsed ? { display: "none" } : {}}
-            className="logo"
-          />
+          >
+            <span className="bookrayder-logo-text">BookRayder</span>
+          </div>
           <div
             className="side-menu-container-parent"
             style={this.state.isCollapsed ? { width: "70px" } : {}}
@@ -518,7 +529,7 @@ class Sidebar extends React.Component<SidebarProps, SidebarState> {
                 ></span>
               </div>
             )}
-            {!this.props.isCollapsed && (
+            {!this.state.isCollapsed && (
               <div
                 className={"side-menu-selector"}
                 style={{ cursor: "pointer" }}
@@ -546,7 +557,7 @@ class Sidebar extends React.Component<SidebarProps, SidebarState> {
 
                 <span
                   style={
-                    this.props.isCollapsed
+                    this.state.isCollapsed
                       ? { display: "none", width: "70%" }
                       : { width: "60%" }
                   }
@@ -571,7 +582,7 @@ class Sidebar extends React.Component<SidebarProps, SidebarState> {
               <div
                 className="side-menu-icon"
                 style={
-                  this.props.isCollapsed
+                  this.state.isCollapsed
                     ? {}
                     : { marginLeft: "20px", marginRight: "15px" }
                 }
@@ -579,7 +590,7 @@ class Sidebar extends React.Component<SidebarProps, SidebarState> {
                 <span
                   className="icon-chart sidebar-shelf-icon"
                   style={
-                    this.props.isCollapsed
+                    this.state.isCollapsed
                       ? {
                           position: "relative",
                           marginLeft: "-0px",
@@ -591,7 +602,7 @@ class Sidebar extends React.Component<SidebarProps, SidebarState> {
               </div>
               <span
                 style={
-                  this.props.isCollapsed
+                  this.state.isCollapsed
                     ? { display: "none", width: "70%" }
                     : { width: "61%" }
                 }

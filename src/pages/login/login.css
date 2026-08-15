@@ -17,11 +17,16 @@
   text-align: center;
   cursor: pointer;
 }
-.login-logo-img {
-  width: 100px;
+.login-logo-img,
+.login-brand-logo {
   position: absolute;
   top: 30px;
   left: 30px;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #1e293b;
+  user-select: none;
 }
 .login-cover-img {
   position: absolute;

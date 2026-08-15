@@ -172,11 +172,7 @@ class Login extends React.Component<LoginProps, LoginState> {
               }}
             >
               <div className="login-logo">
-                <img
-                  src={require("../../assets/images/logo-login.png")}
-                  alt="logo"
-                  className="login-logo-img"
-                />
+                <div className="login-brand-logo">BookRayder</div>
               </div>
 
               <img
@@ -201,7 +197,7 @@ class Login extends React.Component<LoginProps, LoginState> {
               </div>
               <div className="login-subtitle">
                 {this.props.t(
-                  "After three years of design and development, the mobile version of Koodo Reader is finally out"
+                  "Welcome to BookRayder, the modern reader for all your books"
                 )}
               </div>
               <div
@@ -231,11 +227,7 @@ class Login extends React.Component<LoginProps, LoginState> {
               }}
             >
               <div className="login-logo">
-                <img
-                  src={require("../../assets/images/logo-login.png")}
-                  alt="logo"
-                  className="login-logo-img"
-                />
+                <div className="login-brand-logo">BookRayder</div>
               </div>
 
               <img
@@ -307,11 +299,7 @@ class Login extends React.Component<LoginProps, LoginState> {
               }}
             >
               <div className="login-logo">
-                <img
-                  src={require("../../assets/images/logo-login.png")}
-                  alt="logo"
-                  className="login-logo-img"
-                />
+                <div className="login-brand-logo">BookRayder</div>
               </div>
 
               <img
@@ -326,7 +314,7 @@ class Login extends React.Component<LoginProps, LoginState> {
                 style={{ marginTop: "50px", marginBottom: "30px" }}
               >
                 {this.props.t(
-                  "Embark on your journey of exploration with Koodo Reader Pro"
+                  "Embark on your journey of exploration with BookRayder Pro"
                 )}
               </div>
               <div className="login-option-box">
@@ -447,7 +435,7 @@ class Login extends React.Component<LoginProps, LoginState> {
                   </div>
                   <div className="login-term">
                     {this.props.t(
-                      "By clicking continue, you acknowledge that you have carefully read and agree to accept Koodo Reader's Terms of Service and Privacy Policy"
+                      "By clicking continue, you acknowledge that you have carefully read and agree to accept BookRayder's Terms of Service and Privacy Policy"
                     )}
                   </div>
                 </div>
@@ -469,11 +457,7 @@ class Login extends React.Component<LoginProps, LoginState> {
               }}
             >
               <div className="login-logo">
-                <img
-                  src={require("../../assets/images/logo-login.png")}
-                  alt="logo"
-                  className="login-logo-img"
-                />
+                <div className="login-brand-logo">BookRayder</div>
               </div>
 
               <img
@@ -602,11 +586,7 @@ class Login extends React.Component<LoginProps, LoginState> {
               }}
             >
               <div className="login-logo">
-                <img
-                  src={require("../../assets/images/logo-login.png")}
-                  alt="logo"
-                  className="login-logo-img"
-                />
+                <div className="login-brand-logo">BookRayder</div>
               </div>
 
               <img
@@ -668,11 +648,7 @@ class Login extends React.Component<LoginProps, LoginState> {
               }}
             >
               <div className="login-logo">
-                <img
-                  src={require("../../assets/images/logo-login.png")}
-                  alt="logo"
-                  className="login-logo-img"
-                />
+                <div className="login-brand-logo">BookRayder</div>
               </div>
 
               <img
@@ -815,11 +791,7 @@ class Login extends React.Component<LoginProps, LoginState> {
               }}
             >
               <div className="login-logo">
-                <img
-                  src={require("../../assets/images/logo-login.png")}
-                  alt="logo"
-                  className="login-logo-img"
-                />
+                <div className="login-brand-logo">BookRayder</div>
               </div>
 
               <img
@@ -834,7 +806,7 @@ class Login extends React.Component<LoginProps, LoginState> {
                 style={{ marginTop: "80px", marginBottom: "50px" }}
               >
                 {this.props.t(
-                  "Embark on your journey of exploration with Koodo Reader Pro"
+                  "Embark on your journey of exploration with BookRayder Pro"
                 )}
               </div>
               <div className="login-option-box">

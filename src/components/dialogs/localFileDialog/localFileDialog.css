@@ -6,3 +6,22 @@
   padding-right: 20px;
   text-align: center;
 }
+@media screen and (max-width: 768px) {
+  .backup-page-warning-text {
+    font-size: 13px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .add-dialog-button-container {
+    padding: 0 10px;
+    display: flex;
+    justify-content: space-around;
+  }
+  .add-dialog-cancel {
+    font-size: 13px !important;
+    margin-right: 10px !important;
+  }
+  .add-dialog-confirm {
+    font-size: 13px !important;
+  }
+}

@@ -87,21 +87,68 @@
   transform: scaleX(1);
 }
 @media screen and (max-width: 950px) {
+  .header-report-container {
+    right: 15px !important;
+  }
+}
+@media screen and (max-width: 768px) {
+  .header {
+    margin-left: 0px !important;
+    width: 100% !important;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 55px;
+    padding-right: 15px;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 100;
+  }
+  .header-search-container {
+    position: static !important;
+    margin-left: 5px !important;
+    width: auto !important;
+    flex: 1 !important;
+    max-width: calc(100% - 90px) !important;
+  }
+  .setting-icon-parrent {
+    position: static !important;
+    margin-left: 5px !important;
+    display: flex !important;
+    align-items: center !important;
+    flex-shrink: 0;
+  }
+  .setting-icon-container {
+    width: 38px !important;
+    height: 38px !important;
+    line-height: 38px !important;
+    margin-left: 4px !important;
+    font-size: 20px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .header-sort-icon,
+  .setting-icon {
+    float: none !important;
+    margin: 0 !important;
+  }
   .import-from-cloud {
-    position: fixed;
-    left: 15px;
-    top: calc(100vh - 110px);
-    width: 138px;
+    display: none !important;
   }
   .import-from-local {
     position: fixed !important;
-    left: 15px;
-    top: calc(100vh - 80px) !important;
-    width: 138px;
-    padding: 0px !important;
-  }
-  .header-report-container {
-    right: 15px !important;
+    right: 20px !important;
+    left: auto !important;
+    top: auto !important;
+    bottom: 25px !important;
+    width: 50px !important;
+    height: 50px !important;
+    border-radius: 50% !important;
+    line-height: 50px !important;
+    z-index: 99 !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
   }
 }
 .download-demo-book {
@@ -184,46 +231,4 @@
 
 .icon-rotate {
   animation: rotate 2s linear infinite;
-}
-.header-chat-widget {
-  position: absolute;
-  right: 20px;
-  bottom: 40px;
-  z-index: 1000;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  transform: scale(1);
-  overflow: hidden;
-}
-
-.header-chat-widget-badge {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  background: #e53935;
-  color: #fff;
-  border-radius: 10px;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: bold;
-  pointer-events: none;
-  z-index: 1001;
-  box-sizing: border-box;
-}
-
-.header-chat-widget:hover {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  transform: scale(1.05) translateY(-3px);
 }
