@@ -556,7 +556,7 @@ class TextToSpeech extends React.Component<
     if ((ConfigService.getReaderConfig("animation") || "none") !== "none") {
       await sleep(1000);
     }
-    let nodeList = [];
+    let nodeList: any[] = [];
     let nodeTextList = (await this.props.htmlBook.rendition.audioText()).filter(
       (item: string) => item && item.trim()
     );

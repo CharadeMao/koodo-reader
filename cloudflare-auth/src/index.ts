@@ -341,15 +341,25 @@ export default {
         return jsonResponse({ error: 'Unauthorized: Invalid token' }, 401);
       }
 
-      const row: any = await env.DB.prepare(
-        "SELECT value, updated_at, updated_by FROM shared_config WHERE key = 'shared_storage'"
-      ).first();
-
-      if (!row) {
-        return jsonResponse({ configured: false, config: null });
-      }
-
       try {
+        // Auto ensure table exists
+        await env.DB.prepare(
+          `CREATE TABLE IF NOT EXISTS shared_config (
+             key TEXT PRIMARY KEY,
+             value TEXT NOT NULL,
+             updated_by TEXT,
+             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+           )`
+        ).run();
+
+        const row: any = await env.DB.prepare(
+          "SELECT value, updated_at, updated_by FROM shared_config WHERE key = 'shared_storage'"
+        ).first();
+
+        if (!row) {
+          return jsonResponse({ configured: false, config: null });
+        }
+
         const config = JSON.parse(row.value);
         return jsonResponse({
           configured: true,
@@ -397,6 +407,16 @@ export default {
         if (!config) {
           return jsonResponse({ error: 'Storage config is required' }, 400);
         }
+
+        // Auto ensure table exists
+        await env.DB.prepare(
+          `CREATE TABLE IF NOT EXISTS shared_config (
+             key TEXT PRIMARY KEY,
+             value TEXT NOT NULL,
+             updated_by TEXT,
+             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+           )`
+        ).run();
 
         const valueStr = JSON.stringify(config);
         await env.DB.prepare(

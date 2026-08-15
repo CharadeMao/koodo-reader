@@ -118,39 +118,14 @@ class ConfigUtil {
     if (response.code === 200) {
       this.syncData[type] = response.data;
       return JSON.parse(this.syncData[type] || defaultValue);
-    } else if (response.code === 401) {
-      handleExitApp();
-      return null;
     } else {
-      toast.error(
-        i18n.t("Synchronization failed, error code") + ": " + response.msg
-      );
-      if (response.code === 20004) {
-        toast(
-          i18n.t("Please login again to update your membership on this device")
-        );
-      }
-      return null;
+      return JSON.parse(defaultValue);
     }
   }
   static async updateSyncData() {
     let thirdpartyRequest = await getThirdpartyRequest();
 
     let response = await thirdpartyRequest.updateSyncData(this.updateData);
-    if (response.code === 200) {
-    } else if (response.code === 401) {
-      handleExitApp();
-    } else {
-      toast.error(
-        i18n.t("Synchronization failed, error code") + ": " + response.msg
-      );
-      if (response.code === 20004) {
-        toast(
-          i18n.t("Please login again to update your membership on this device")
-        );
-      }
-    }
-
     this.syncData = {};
     this.updateData = {};
   }

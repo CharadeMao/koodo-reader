@@ -86,53 +86,16 @@ export const onSyncCallback = async (service: string, authCode: string) => {
   return res;
 };
 export const encryptToken = async (service: string, config: any) => {
-  let syncToken = JSON.stringify(config);
-  let thirdpartyRequest = await getThirdpartyRequest();
-  let response = await thirdpartyRequest.encryptToken({
-    token: syncToken,
-  });
-  if (response.code === 200) {
-    await TokenService.setToken(
-      service + "_token",
-      response.data.encrypted_token
-    );
-    return response;
-  } else if (response.code === 401) {
-    handleExitApp();
-    return response;
-  } else {
-    toast.error(i18n.t("Encryption failed, error code") + ": " + response.msg);
-    if (response.code === 20004) {
-      toast(
-        i18n.t("Please login again to update your membership on this device")
-      );
-    }
-    return response;
-  }
+  let syncToken = typeof config === "string" ? config : JSON.stringify(config);
+  await TokenService.setToken(service + "_token", syncToken);
+  return { code: 200, data: { encrypted_token: syncToken } };
 };
 export const decryptToken = async (service: string) => {
-  let thirdpartyRequest = await getThirdpartyRequest();
   let encryptedToken = await TokenService.getToken(service + "_token");
   if (!encryptedToken || encryptedToken === "{}") {
-    return {};
+    return { code: 400, data: { token: "{}" } };
   }
-  let response = await thirdpartyRequest.decryptToken({
-    encrypted_token: encryptedToken,
-  });
-  if (response.code === 200) {
-    return response;
-  } else if (response.code === 401) {
-    handleExitApp();
-    return response;
-  } else {
-    toast.error(i18n.t("Decryption failed, error code") + ": " + response.msg);
-    if (response.code === 20004) {
-      toast(
-        i18n.t("Please login again to update your membership on this device")
-      );
-    }
-    return response;
-  }
+  return { code: 200, data: { token: encryptedToken } };
 };
 export const getCloudSyncToken = async () => {
   let thirdpartyRequest = await getThirdpartyRequest();
