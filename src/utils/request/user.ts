@@ -231,22 +231,15 @@ export const loginRegister = async (service: string, code: string) => {
   return response;
 };
 export const getTempToken = async () => {
-  const cfAuthUrl = getCloudflareAuthUrl();
-  if (cfAuthUrl) {
-    const token = await TokenService.getToken("access_token");
-    return { code: 200, data: { temp_token: token } };
-  }
-  let userRequest = await getUserRequest();
-  let response = await userRequest.getTempToken();
-  if (response.code === 200) {
-    return response;
-  } else if (response.code === 401) {
-    handleExitApp();
-    return response;
-  } else {
-    toast.error(i18n.t("Fetch failed, error code") + ": " + response.msg);
-    return response;
-  }
+  const token =
+    (await TokenService.getToken("access_token")) || "self-hosted-token";
+  return {
+    code: 200,
+    data: {
+      access_token: token,
+      refresh_token: token,
+    },
+  };
 };
 export const fetchUserInfo = async () => {
   const cfAuthUrl = getCloudflareAuthUrl();

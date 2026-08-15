@@ -257,20 +257,6 @@ export function handleFetchUserInfo() {
     ) {
       dispatch(handleShowSupport(true));
     }
-    if (userInfo && userInfo.valid_until && userInfo.token_valid_until) {
-      if (
-        userInfo.valid_until > 0 &&
-        userInfo.token_valid_until > 0 &&
-        userInfo.valid_until > userInfo.token_valid_until
-      ) {
-        let userRequest = await getUserRequest();
-        await userRequest.refreshUserToken();
-        resetReaderRequest();
-        resetUserRequest();
-        resetThirdpartyRequest();
-      }
-    }
-
     dispatch(handleUserInfo(userInfo));
     return userInfo;
   };

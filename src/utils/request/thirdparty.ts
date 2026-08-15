@@ -97,20 +97,8 @@ export const decryptToken = async (service: string) => {
   }
   return { code: 200, data: { token: encryptedToken } };
 };
-export const getCloudSyncToken = async () => {
-  let thirdpartyRequest = await getThirdpartyRequest();
-  let response = await thirdpartyRequest.getSyncToken();
-  if (response.code === 200) {
-    return response;
-  } else if (response.code === 401) {
-    handleExitApp();
-    return {};
-  } else if (response.code === 20004) {
-    return {};
-  } else {
-    toast.error(i18n.t("Fetch failed, error code") + ": " + response.msg);
-    return {};
-  }
+export const getCloudSyncToken = async (): Promise<{ code: number; data: any }> => {
+  return { code: 200, data: {} };
 };
 export const authThirdToken = async (
   provider: string,
@@ -126,17 +114,7 @@ export const authThirdToken = async (
     redirect_uri: redirectUri,
     code,
   });
-  if (response.code === 200) {
-    return response;
-  } else if (response.code === 401) {
-    handleExitApp();
-    return response;
-  } else {
-    toast.error(
-      i18n.t("Authorization failed, error code") + ": " + response.msg
-    );
-    return response;
-  }
+  return response;
 };
 export const refreshThirdToken = async (
   provider: string,
@@ -150,15 +128,5 @@ export const refreshThirdToken = async (
     provider,
     refresh_token,
   });
-  if (response.code === 200) {
-    return response;
-  } else if (response.code === 401) {
-    handleExitApp();
-    return response;
-  } else {
-    toast.error(
-      i18n.t("Authorization failed, error code") + ": " + response.msg
-    );
-    return response;
-  }
+  return response;
 };

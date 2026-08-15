@@ -54,6 +54,12 @@ export const checkStableUpdate = async () => {
   return res.data.log;
 };
 export const handleExitApp = async () => {
+  // In self-hosted mode, never automatically kick out the user on unexpected errors
+  const isAuthed = (await TokenService.getToken("is_authed")) === "yes";
+  if (isAuthed) {
+    console.warn("handleExitApp called in self-hosted mode: suppressed auto-logout.");
+    return;
+  }
   toast.error(i18n.t("Authorization failed, please login again"));
   await handleClearToken();
   //路由到login页面
