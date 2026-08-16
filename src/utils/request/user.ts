@@ -79,7 +79,8 @@ export const getProxiedWebDavUrl = (rawUrl: string): string => {
   const cfUrl = getCloudflareAuthUrl();
   if (!cfUrl) return rawUrl;
   if (rawUrl.includes("/api/proxy/webdav")) return rawUrl;
-  return `${cfUrl}/api/proxy/webdav?target=${encodeURIComponent(rawUrl)}`;
+  const cleanUrl = rawUrl.replace(/\/+$/, "");
+  return `${cfUrl}/api/proxy/webdav/${cleanUrl}`;
 };
 
 export const fetchSharedStorageConfig = async (): Promise<any | null> => {

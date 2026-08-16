@@ -28,7 +28,7 @@ import {
 import SyncService from "./storage/syncService";
 import localforage from "localforage";
 import { driveList } from "../constants/driveList";
-import { updateUserConfig } from "./request/user";
+import { updateUserConfig, getProxiedWebDavUrl } from "./request/user";
 import { languageCNMap, languageENMap } from "../constants/ttsList";
 import { BookHelper } from "../assets/lib/kookit.min";
 import {
@@ -1078,7 +1078,11 @@ export const testConnection = async (driveName: string, driveConfig: any) => {
 
     return result;
   } else {
-    let syncUtil = new SyncUtil(driveName, driveConfig);
+    let finalDriveConfig = { ...driveConfig };
+    if (driveName === "webdav" && !isElectron && finalDriveConfig.url) {
+      finalDriveConfig.url = getProxiedWebDavUrl(finalDriveConfig.url);
+    }
+    let syncUtil = new SyncUtil(driveName, finalDriveConfig);
     // 上传到云端
     let result = await syncUtil.uploadFile(
       "test.txt",
@@ -1721,6 +1725,9 @@ export const getICloudDrivePath = () => {
   return "";
 };
 export const prepareThirdConfig = async (service: string, config: any) => {
+  if (service === "webdav" && !isElectron && config && config.url) {
+    config.url = getProxiedWebDavUrl(config.url);
+  }
   if (
     service === "adrive" ||
     service === "boxnet" ||

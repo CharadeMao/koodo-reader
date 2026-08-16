@@ -146,8 +146,9 @@ function jsonResponse(data: any, status = 200, headers: Record<string, string> =
     headers: {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Admin-Key',
+      'Access-Control-Allow-Methods': 'GET, HEAD, POST, PUT, DELETE, CONNECT, OPTIONS, TRACE, PATCH, PROPFIND, PROPPATCH, MKCOL, COPY, MOVE, LOCK, UNLOCK',
+      'Access-Control-Allow-Headers': '*',
+      'Access-Control-Expose-Headers': '*',
       ...headers
     }
   });
@@ -160,10 +161,13 @@ export default {
     // Handle CORS preflight
     if (request.method === 'OPTIONS') {
       return new Response(null, {
+        status: 204,
         headers: {
           'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Admin-Key',
+          'Access-Control-Allow-Methods': 'GET, HEAD, POST, PUT, DELETE, CONNECT, OPTIONS, TRACE, PATCH, PROPFIND, PROPPATCH, MKCOL, COPY, MOVE, LOCK, UNLOCK',
+          'Access-Control-Allow-Headers': '*',
+          'Access-Control-Expose-Headers': '*',
+          'Access-Control-Max-Age': '86400',
         }
       });
     }
@@ -452,29 +456,40 @@ export default {
         });
       }
 
+      let targetUrl = '';
       const targetParam = url.searchParams.get('target');
-      if (!targetParam) {
-        return jsonResponse({ error: 'target query parameter is required' }, 400);
-      }
-
-      let targetUrl = decodeURIComponent(targetParam);
-      const proxyBasePath = '/api/proxy/webdav';
-      const subPath = url.pathname.substring(proxyBasePath.length);
-      if (subPath && subPath !== '/') {
-        targetUrl = targetUrl.replace(/\/$/, '') + (subPath.startsWith('/') ? subPath : '/' + subPath);
-      }
-
-      const parsedTarget = new URL(targetUrl);
-      const forwardHeaders = new Headers();
-      for (const [key, value] of request.headers.entries()) {
-        const k = key.toLowerCase();
-        if (!k.startsWith('cf-') && k !== 'host' && !k.startsWith('sec-') && k !== 'origin' && k !== 'referer') {
-          forwardHeaders.set(key, value);
+      if (targetParam) {
+        targetUrl = decodeURIComponent(targetParam);
+        const subPath = url.pathname.substring('/api/proxy/webdav'.length);
+        if (subPath && subPath !== '/') {
+          targetUrl = targetUrl.replace(/\/$/, '') + (subPath.startsWith('/') ? subPath : '/' + subPath);
+        }
+      } else {
+        const restPath = url.pathname.substring('/api/proxy/webdav/'.length);
+        if (restPath.startsWith('https://') || restPath.startsWith('http://')) {
+          targetUrl = restPath + url.search;
+        } else if (restPath.startsWith('https:/')) {
+          targetUrl = 'https://' + restPath.substring('https:/'.length).replace(/^\/+/, '') + url.search;
+        } else if (restPath.startsWith('http:/')) {
+          targetUrl = 'http://' + restPath.substring('http:/'.length).replace(/^\/+/, '') + url.search;
         }
       }
-      forwardHeaders.set('Host', parsedTarget.host);
+
+      if (!targetUrl) {
+        return jsonResponse({ error: 'Target WebDAV URL is required' }, 400);
+      }
 
       try {
+        const parsedTarget = new URL(targetUrl);
+        const forwardHeaders = new Headers();
+        for (const [key, value] of request.headers.entries()) {
+          const k = key.toLowerCase();
+          if (!k.startsWith('cf-') && k !== 'host' && !k.startsWith('sec-') && k !== 'origin' && k !== 'referer') {
+            forwardHeaders.set(key, value);
+          }
+        }
+        forwardHeaders.set('Host', parsedTarget.host);
+
         const fetchOptions: RequestInit = {
           method: request.method,
           headers: forwardHeaders,
