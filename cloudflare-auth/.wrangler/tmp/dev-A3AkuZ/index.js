@@ -429,10 +429,25 @@ var src_default = {
           }
         }
         forwardHeaders.set("Host", parsedTarget.host);
+        if (request.method === "PROPFIND") {
+          const depth = forwardHeaders.get("depth");
+          if (!depth || depth.toLowerCase() === "infinity") {
+            forwardHeaders.set("Depth", "1");
+          }
+        }
+        const dest = forwardHeaders.get("destination");
+        if (dest && dest.includes("/api/proxy/webdav/")) {
+          const rawDest = dest.substring(dest.indexOf("/api/proxy/webdav/") + "/api/proxy/webdav/".length);
+          forwardHeaders.set("Destination", rawDest.startsWith("http") ? rawDest : "https://" + rawDest.replace(/^https?:\/+/, ""));
+        }
+        if (!forwardHeaders.has("authorization") && (url.username || url.password)) {
+          forwardHeaders.set("Authorization", "Basic " + btoa(`${url.username}:${url.password}`));
+        }
+        const reqBody = ["GET", "HEAD", "OPTIONS"].includes(request.method) ? void 0 : await request.arrayBuffer();
         const fetchOptions = {
           method: request.method,
           headers: forwardHeaders,
-          body: ["GET", "HEAD", "OPTIONS"].includes(request.method) ? void 0 : request.body,
+          body: reqBody && reqBody.byteLength > 0 ? reqBody : void 0,
           redirect: "follow"
         };
         const targetResp = await fetch(targetUrl, fetchOptions);

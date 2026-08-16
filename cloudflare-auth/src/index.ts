@@ -490,10 +490,35 @@ export default {
         }
         forwardHeaders.set('Host', parsedTarget.host);
 
+        // Normalize Depth header for PROPFIND (Apache/InfiniCLOUD disables Depth: infinity)
+        if (request.method === 'PROPFIND') {
+          const depth = forwardHeaders.get('depth');
+          if (!depth || depth.toLowerCase() === 'infinity') {
+            forwardHeaders.set('Depth', '1');
+          }
+        }
+
+        // Unwrap Destination header for COPY/MOVE
+        const dest = forwardHeaders.get('destination');
+        if (dest && dest.includes('/api/proxy/webdav/')) {
+          const rawDest = dest.substring(dest.indexOf('/api/proxy/webdav/') + '/api/proxy/webdav/'.length);
+          forwardHeaders.set('Destination', rawDest.startsWith('http') ? rawDest : 'https://' + rawDest.replace(/^https?:\/+/, ''));
+        }
+
+        // If credentials in URL and no Authorization header, inject Basic Auth
+        if (!forwardHeaders.has('authorization') && (url.username || url.password)) {
+          forwardHeaders.set('Authorization', 'Basic ' + btoa(`${url.username}:${url.password}`));
+        }
+
+        // Buffer request body into ArrayBuffer to allow redirects without "one-time-use body" error
+        const reqBody = ['GET', 'HEAD', 'OPTIONS'].includes(request.method) 
+          ? undefined 
+          : await request.arrayBuffer();
+
         const fetchOptions: RequestInit = {
           method: request.method,
           headers: forwardHeaders,
-          body: ['GET', 'HEAD', 'OPTIONS'].includes(request.method) ? undefined : request.body,
+          body: reqBody && reqBody.byteLength > 0 ? reqBody : undefined,
           redirect: 'follow',
         };
 
