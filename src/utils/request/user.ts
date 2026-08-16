@@ -74,9 +74,19 @@ export const getCloudflareAuthUrl = (): string => {
   ).replace(/\/+$/, "");
 };
 
+export const getProxiedWebDavUrl = (rawUrl: string): string => {
+  if (!rawUrl || isElectron) return rawUrl;
+  const cfUrl = getCloudflareAuthUrl();
+  if (!cfUrl) return rawUrl;
+  if (rawUrl.includes("/api/proxy/webdav")) return rawUrl;
+  return `${cfUrl}/api/proxy/webdav?target=${encodeURIComponent(rawUrl)}`;
+};
+
 export const fetchSharedStorageConfig = async (): Promise<any | null> => {
   try {
     const cfUrl = getCloudflareAuthUrl();
+    if (!cfUrl) return null;
+
     const token = await TokenService.getToken("access_token");
     if (!token) return null;
 

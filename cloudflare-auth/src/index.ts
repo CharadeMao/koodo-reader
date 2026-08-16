@@ -432,8 +432,68 @@ export default {
           success: true,
           message: 'Shared family storage updated successfully'
         });
-      } catch (e: any) {
+} catch (e: any) {
         return jsonResponse({ error: e.message || 'Failed to save config' }, 500);
+      }
+    }
+
+    // 5. Universal WebDAV CORS Reverse Proxy
+    if (url.pathname.startsWith('/api/proxy/webdav')) {
+      if (request.method === 'OPTIONS') {
+        return new Response(null, {
+          status: 204,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, HEAD, POST, PUT, DELETE, CONNECT, OPTIONS, TRACE, PATCH, PROPFIND, PROPPATCH, MKCOL, COPY, MOVE, LOCK, UNLOCK',
+            'Access-Control-Allow-Headers': '*',
+            'Access-Control-Expose-Headers': '*',
+            'Access-Control-Max-Age': '86400',
+          },
+        });
+      }
+
+      const targetParam = url.searchParams.get('target');
+      if (!targetParam) {
+        return jsonResponse({ error: 'target query parameter is required' }, 400);
+      }
+
+      let targetUrl = decodeURIComponent(targetParam);
+      const proxyBasePath = '/api/proxy/webdav';
+      const subPath = url.pathname.substring(proxyBasePath.length);
+      if (subPath && subPath !== '/') {
+        targetUrl = targetUrl.replace(/\/$/, '') + subPath;
+      }
+
+      const forwardHeaders = new Headers();
+      for (const [key, value] of request.headers.entries()) {
+        const k = key.toLowerCase();
+        if (!k.startsWith('cf-') && k !== 'host' && !k.startsWith('sec-') && k !== 'origin' && k !== 'referer') {
+          forwardHeaders.set(key, value);
+        }
+      }
+
+      try {
+        const fetchOptions: RequestInit = {
+          method: request.method,
+          headers: forwardHeaders,
+          body: ['GET', 'HEAD', 'OPTIONS'].includes(request.method) ? undefined : request.body,
+          redirect: 'follow',
+        };
+
+        const targetResp = await fetch(targetUrl, fetchOptions);
+        const respHeaders = new Headers(targetResp.headers);
+        respHeaders.set('Access-Control-Allow-Origin', '*');
+        respHeaders.set('Access-Control-Allow-Methods', 'GET, HEAD, POST, PUT, DELETE, CONNECT, OPTIONS, TRACE, PATCH, PROPFIND, PROPPATCH, MKCOL, COPY, MOVE, LOCK, UNLOCK');
+        respHeaders.set('Access-Control-Allow-Headers', '*');
+        respHeaders.set('Access-Control-Expose-Headers', '*');
+
+        return new Response(targetResp.body, {
+          status: targetResp.status,
+          statusText: targetResp.statusText,
+          headers: respHeaders,
+        });
+      } catch (err: any) {
+        return jsonResponse({ error: err.message || 'WebDAV Proxy Failed' }, 502);
       }
     }
 

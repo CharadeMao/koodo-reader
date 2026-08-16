@@ -44,6 +44,7 @@ import {
   updateUserConfig,
   saveSharedStorageConfig,
   fetchSharedStorageConfig,
+  getProxiedWebDavUrl,
 } from "../../../utils/request/user";
 import BookUtil from "../../../utils/file/bookUtil";
 import Book from "../../../models/Book";
@@ -440,25 +441,6 @@ class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
     this.props.handleSettingDrive("");
   };
   checkCorsForDrive = async (): Promise<boolean> => {
-    toast.loading(i18n.t("Testing connection..."), {
-      id: "testing-connection-id",
-    });
-    let corsResult = await testCORS(this.state.driveConfig.url);
-    if (!corsResult && !isElectron) {
-      const extensionInfo = await detectKoodoExtension();
-      if (extensionInfo.installed) {
-        vexComfirmAsync(
-          this.props.t(
-            "Please click the Koodo Reader extension icon in the upper right corner of the browser, authorize the request to this endpoint, and try again"
-          )
-        );
-      }
-    }
-    if (!corsResult) {
-      toast.dismiss("testing-connection-id");
-      return false;
-    }
-    toast.dismiss("testing-connection-id");
     return true;
   };
   handleConfirmDrive = async () => {
@@ -475,6 +457,12 @@ class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
     if (!flag) {
       return;
     }
+
+    let finalConfig = { ...this.state.driveConfig };
+    if (this.props.settingDrive === "webdav" && !isElectron && finalConfig.url) {
+      finalConfig.url = getProxiedWebDavUrl(finalConfig.url);
+    }
+
     if (
       this.props.settingDrive === "webdav" ||
       this.props.settingDrive === "docker" ||
@@ -486,7 +474,7 @@ class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
       toast.loading(i18n.t("Adding"), { id: "adding-sync-id" });
       let res = await encryptToken(
         this.props.settingDrive,
-        this.state.driveConfig
+        finalConfig
       );
       if (res.code === 200) {
         ConfigService.setListConfig(this.props.settingDrive, "dataSourceList");
@@ -902,11 +890,15 @@ class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
               <div
                 className="voice-add-confirm"
                 onClick={async () => {
-                  if (this.props.settingDrive === "webdav") {
-                    if (!(await this.checkCorsForDrive())) {
-                      return;
-                    }
+                  let finalConfig = { ...this.state.driveConfig };
+                  if (
+                    this.props.settingDrive === "webdav" &&
+                    !isElectron &&
+                    finalConfig.url
+                  ) {
+                    finalConfig.url = getProxiedWebDavUrl(finalConfig.url);
                   }
+
                   if (
                     this.props.settingDrive === "webdav" ||
                     this.props.settingDrive === "docker" ||
@@ -917,7 +909,7 @@ class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
                   ) {
                     let connectionResult = await testConnection(
                       this.props.settingDrive,
-                      this.state.driveConfig
+                      finalConfig
                     );
                     if (!connectionResult) {
                       return;
