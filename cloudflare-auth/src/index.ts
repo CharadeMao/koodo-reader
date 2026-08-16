@@ -461,9 +461,10 @@ export default {
       const proxyBasePath = '/api/proxy/webdav';
       const subPath = url.pathname.substring(proxyBasePath.length);
       if (subPath && subPath !== '/') {
-        targetUrl = targetUrl.replace(/\/$/, '') + subPath;
+        targetUrl = targetUrl.replace(/\/$/, '') + (subPath.startsWith('/') ? subPath : '/' + subPath);
       }
 
+      const parsedTarget = new URL(targetUrl);
       const forwardHeaders = new Headers();
       for (const [key, value] of request.headers.entries()) {
         const k = key.toLowerCase();
@@ -471,6 +472,7 @@ export default {
           forwardHeaders.set(key, value);
         }
       }
+      forwardHeaders.set('Host', parsedTarget.host);
 
       try {
         const fetchOptions: RequestInit = {

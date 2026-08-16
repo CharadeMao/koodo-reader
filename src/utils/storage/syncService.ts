@@ -4,6 +4,8 @@ import {
 } from "../../assets/lib/kookit-extra-browser.min";
 import { isTokenExpired } from "../common";
 import { getCloudConfig } from "../file/common";
+import { getProxiedWebDavUrl } from "../request/user";
+import { isElectron } from "react-device-detect";
 
 class SyncService {
   private static syncUtilCache: { [key: string]: SyncUtil } = {};
@@ -15,6 +17,9 @@ class SyncService {
     }
     if (!this.syncUtilCache[service] || (await isTokenExpired(service))) {
       let config = await getCloudConfig(service);
+      if (service === "webdav" && !isElectron && config && config.url) {
+        config.url = getProxiedWebDavUrl(config.url);
+      }
 
       this.syncUtilCache[service] = new SyncUtil(service, config);
     }
@@ -30,6 +35,9 @@ class SyncService {
     if (!this.pickerUtilCache[service] || (await isTokenExpired(service))) {
       let config = await getCloudConfig(service);
       config.baseFolder = "";
+      if (service === "webdav" && !isElectron && config && config.url) {
+        config.url = getProxiedWebDavUrl(config.url);
+      }
 
       this.pickerUtilCache[service] = new SyncUtil(service, config);
     }
